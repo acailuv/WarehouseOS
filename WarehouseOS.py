@@ -27,8 +27,8 @@ def check_out_of_index(container, index):
         return False
 
 def save_data():
-    acc_data = open(".\\WOS_acc.dat", "wb")
-    loc_data = open(".\\WOS_loc.dat", "wb")
+    acc_data = open("WOS_acc.dat", "wb")
+    loc_data = open("WOS_loc.dat", "wb")
     pickle.dump(account_list, acc_data)
     pickle.dump(location_flag, loc_data)
     acc_data.close()
@@ -36,28 +36,73 @@ def save_data():
 
 def load_data(account_list, location_flag):
     try:
-        acc_data = open(".\\WOS_acc.dat", "rb")
+        acc_data = open("WOS_acc.dat", "rb")
         account_list = pickle.load(acc_data)
         acc_data.close()
     except FileNotFoundError:
-        acc_data = open(".\\WOS_acc.dat", "wb")
+        acc_data = open("WOS_acc.dat", "wb")
         acc_data.close()
     except EOFError:
         pass
     
     try:
-        loc_data = open(".\\WOS_loc.dat", "rb")
+        loc_data = open("WOS_loc.dat", "rb")
         location_flag = pickle.load(loc_data)
         loc_data.close()
     except FileNotFoundError:
-        loc_data = open(".\\WOS_loc.dat", "wb")
+        loc_data = open("WOS_loc.dat", "wb")
         loc_data.close()
     except EOFError:
         pass
+    
+    return account_list, location_flag
 
 def print_location_data():
     for i in range(100):
         print(location_flag[i], end=' ')
+    print()
+
+def print_all_account():
+    if len(account_list)==0:
+        print("No account exists.")
+    else:
+        for i in range(len(account_list)):
+            print(i+1, ">")
+            account_list[i].to_string()
+
+def choose_account():
+    print("[CHOOSE ACCOUNT]")
+    print_all_account()
+    idx = get_valid_int("Choose Account: ") - 1
+    if check_out_of_index(account_list, idx):
+        return idx
+    else:
+        invalid_input_string()
+        print()
+        choose_account()
+
+def find_item(item_key):
+    for acc in account_list:
+        for itm in acc.items:
+            key = itm.__class__.__name__ + itm.name
+            if itm.__class__.__name__ == "Car":
+                key = key + itm.model + itm.color
+            elif itm.__class__.__name__ == "Luggage":
+                key = key + itm.brand + itm.color
+            elif itm.__class__.__name__ == "Cargo":
+                for c_itm in itm.content:
+                    if c_itm.__class__.__name__ == "Car":
+                        key = key + c_itm.model + c_itm.color
+                    elif c_itm.__class__.__name__ == "Luggage":
+                        key = key + c_itm.brand + c_itm.color
+                    else:
+                        key = key + c_itm.name
+
+            if str(item_key).lower() in key.lower():
+                itm.to_string()
+                print("=======================================")
+                print("Owned by: " + acc.name)
+                print("Located at: " + itm.location)
     print()
 
 #functions to alter/mutate account_list
@@ -70,6 +115,7 @@ def add_account(name=None, age=None, phone=None, email=None, address=None):
     address = input("Address: ") if address==None else address
     account_list.append(Account(name, age, phone, email, address))
     print("[ACCOUNT CREATED]")
+    save_data()
 
 def delete_account(idx=None):
     for acc in account_list:
@@ -84,9 +130,11 @@ def delete_account(idx=None):
         print("Account Number", acc_index, "does not exist. Please try again.")
         acc_index = get_valid_int("Delete Account (Input 0 to cancel): ")
     for item in account_list[acc_index-1].items:
+        item.location = item.location[1]
         location_flag[int(item.location)-1] = True
     del account_list[acc_index-1]
     print("[ACCOUNT DELETED]")
+    save_data()
 
 
 #essential variables
@@ -94,7 +142,6 @@ account_list = []
 location_flag = []
 for i in range(100):
     location_flag.append(True)
-load_data(account_list, location_flag)
 
 #classes
 class Account:
@@ -124,7 +171,7 @@ class Account:
                 i.to_string()
         print('\n')
 
-    def deposit(self, select=None, name=None, model=None, color=None, brand=None):
+    def deposit(self, select=None, name=None, model=None, color=None, brand=None, c_select=None):
         if True not in location_flag:
             print("WAREHOUSE FULL!")
             return
@@ -154,7 +201,7 @@ class Account:
         elif select==3:
             name = input("Cargo Name: ") if name==None else name
             new_cargo = Cargo(name, location)
-            new_cargo.deposit() if name==None else new_cargo.deposit(4)
+            new_cargo.deposit() if c_select==None else new_cargo.deposit(c_select)
             self.items.append(new_cargo)
             location_flag[int(location)-1] = False
             save_data()
@@ -279,7 +326,50 @@ class Cargo(Item):
 # ---------------------
 # <Requirement>
 # -> Create account
+# -> Remove account
 # -> Deposit items
 # -> Withdraw items
-# -> Remove account
-# -> container/item location
+# -> View all accounts
+# -> Container/item location
+
+if __name__ == "__main__":
+    account_list, location_flag = load_data(account_list, location_flag)
+
+while True:
+    print("[MAIN MENU]                      ")
+    print("1. Create Account                ")
+    print("2. Remove Account                ")
+    print("3. Deposit Items                 ")
+    print("4. Withdraw Items                ")
+    print("5. Display all Accounts          ")
+    print("6. Find Item/Container Location  ")
+    print("7. Exit Program                  ")
+    print("> ", end='')
+    select = get_valid_int()
+    if select == 1: #create account
+        add_account()
+    elif select == 2: #remove account
+        delete_account()
+    elif select == 3: #deposit items
+        if len(account_list)==0:
+            print("No account exists. Cannot Withdraw")
+            continue
+        acc_idx = choose_account()
+        acc = account_list[acc_idx]
+        acc.deposit()
+    elif select == 4: #withdraw items
+        if len(account_list)==0:
+            print("No account exists. Cannot Withdraw")
+            continue
+        acc_idx = choose_account()
+        acc = account_list[acc_idx]
+        acc.withdraw()
+    elif select == 5: #display all accounts
+        print_all_account()
+    elif select == 6: #find item/container
+        item_key = input("Search: ")
+        find_item(item_key)
+    elif select == 7:
+        quit() #exit program
+    else:
+        invalid_input_string()
