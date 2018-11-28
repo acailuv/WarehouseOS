@@ -74,12 +74,12 @@ def choose_account(): #choose account and return its index
     print("[CHOOSE ACCOUNT]")
     print_all_account() #refer to print_all_account() function above
     idx = get_valid_int("Choose Account: ") - 1 #refer to get_valid_int() function above. this line gets a valid int and subtract that by 1
-    if check_out_of_index(account_list, idx): #refer to check_out_of_index() function above. if in bounds
-        return idx #return index
-    else: #if out of bounds
+    while not check_out_of_index(account_list, idx): #refer to check_out_of_index() function above. looping while not in bounds
         invalid_input_string() #refer to invalid_input_string() function above
         print() #extra space
-        choose_account() #re-execute this function
+        idx = get_valid_int("Choose Account: ") - 1 #refer to get_valid_int() function above. this line gets a valid int and subtract that by 1
+    return idx #return index
+        
 
 def find_item(item_key): #find a particular item based on its attributes, name and/or type.
     for acc in account_list: #looping all accounts in account_list
@@ -352,7 +352,7 @@ while True:
         delete_account()
     elif select == 3: #deposit items
         if len(account_list)==0:
-            print("No account exists. Cannot Withdraw")
+            print("No account exists. Cannot Deposit")
             continue
         acc_idx = choose_account()
         acc = account_list[acc_idx]
