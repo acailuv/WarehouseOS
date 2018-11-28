@@ -123,12 +123,12 @@ def delete_account(idx=None): #delete an account and automatically withdraw all 
         print(str(acc_number) + ">")
         acc.to_string() #call to_string() function to acc
     print("NOTE: All of deleted account's item will be withdrawn!")
-    acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") #get valid int for index
+    acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") if idx==None else idx #get valid int for index
     if acc_index==0: return #if index is 0 cancel deletion
     while not check_out_of_index(account_list, acc_index-1):
         if acc_index==0: return #if index is 0 cancel deletion
         print("Account Number", acc_index, "does not exist. Please try again.")
-        acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") #get valid int for index
+        acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") if idx==None else idx #get valid int for index
     for item in account_list[acc_index-1].items: #looping item in account_list[acc_index-1]'s item list
         item.location = item.location if len(item.location)==1 else item.location[1] 
         location_flag[int(item.location)-1] = True #set that item location to available or true
