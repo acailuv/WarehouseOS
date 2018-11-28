@@ -343,8 +343,8 @@ class WarehouseOS_Test(unittest.TestCase):
     def test_add_account(self):
         location_flag = []
         for i in range(100): #assign all locations to 'available' by default
-            location_flag.append(True) #print all location availability (debug only)
-        print_location_data()
+            location_flag.append(True)
+        print_location_data() #print all location availability (debug only)
         add_account("Testing", 999, "999-89531", "test_email@emailhost.com", "Test Addr. 2nd Avenue, Testown")
         added_account = account_list[len(account_list)-1]
         assert added_account in account_list #assert whether or not the account has been created
@@ -352,8 +352,8 @@ class WarehouseOS_Test(unittest.TestCase):
     def test_delete_account(self):
         location_flag = []
         for i in range(100): #assign all locations to 'available' by default
-            location_flag.append(True) #print all location availability (debug only)
-        print_location_data()
+            location_flag.append(True)
+        print_location_data() #print all location availability (debug only)
         deleted_account = account_list[len(account_list)-1]
         delete_account(len(account_list))
         assert deleted_account not in account_list
