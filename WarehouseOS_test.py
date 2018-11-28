@@ -1,5 +1,4 @@
 import unittest
-
 import pickle
 
 #utility function to get input etc.
@@ -76,12 +75,12 @@ def choose_account(): #choose account and return its index
     print("[CHOOSE ACCOUNT]")
     print_all_account() #refer to print_all_account() function above
     idx = get_valid_int("Choose Account: ") - 1 #refer to get_valid_int() function above. this line gets a valid int and subtract that by 1
-    if check_out_of_index(account_list, idx): #refer to check_out_of_index() function above. if in bounds
-        return idx #return index
-    else: #if out of bounds
+    while not check_out_of_index(account_list, idx): #refer to check_out_of_index() function above. looping while not in bounds
         invalid_input_string() #refer to invalid_input_string() function above
         print() #extra space
-        choose_account() #re-execute this function
+        idx = get_valid_int("Choose Account: ") - 1 #refer to get_valid_int() function above. this line gets a valid int and subtract that by 1
+    return idx #return index
+        
 
 def find_item(item_key): #find a particular item based on its attributes, name and/or type.
     for acc in account_list: #looping all accounts in account_list
@@ -125,12 +124,12 @@ def delete_account(idx=None): #delete an account and automatically withdraw all 
         print(str(acc_number) + ">")
         acc.to_string() #call to_string() function to acc
     print("NOTE: All of deleted account's item will be withdrawn!")
-    acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") #get valid int for index
+    acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") if idx==None else idx #get valid int for index
     if acc_index==0: return #if index is 0 cancel deletion
     while not check_out_of_index(account_list, acc_index-1):
         if acc_index==0: return #if index is 0 cancel deletion
         print("Account Number", acc_index, "does not exist. Please try again.")
-        acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") #get valid int for index
+        acc_index = get_valid_int("Delete Account (Input 0 to cancel): ") if idx==None else idx #get valid int for index
     for item in account_list[acc_index-1].items: #looping item in account_list[acc_index-1]'s item list
         item.location = item.location if len(item.location)==1 else item.location[1] 
         location_flag[int(item.location)-1] = True #set that item location to available or true
@@ -342,30 +341,23 @@ class WarehouseOS_Test(unittest.TestCase):
     # // Basic Account Creation Function Tests
     # //----------------------------------------------
     def test_add_account(self):
+        location_flag = []
+        for i in range(100): #assign all locations to 'available' by default
+            location_flag.append(True) #print all location availability (debug only)
+        print_location_data()
         add_account("Testing", 999, "999-89531", "test_email@emailhost.com", "Test Addr. 2nd Avenue, Testown")
         added_account = account_list[len(account_list)-1]
         assert added_account in account_list #assert whether or not the account has been created
 
     def test_delete_account(self):
-        #deconstructed function for assert purposes
-        for acc in account_list:
-            acc_number = account_list.index(acc)+1
-            print(str(acc_number) + ">")
-            acc.to_string()
-        print("NOTE: All of deleted account's item will be withdrawn!")
-        acc_index = 1 #existing account deleted
-        if acc_index==0: return
-        while not check_out_of_index(account_list, acc_index-1):
-            if acc_index==0: return
-            print("Account Number", acc_index, "does not exist. Please try again.")
-            acc_index = get_valid_int("Delete Account (Input 0 to cancel): ")
-        for item in account_list[acc_index-1].items:
-            location_flag[int(item.location)-1] = True
-            assert location_flag[int(item.location)-1] #assert whether or not that item slot has been freed
-        deleted_account = account_list[acc_index-1]
-        del account_list[acc_index-1]
-        print("[ACCOUNT DELETED]")
-        assert deleted_account not in account_list #assert whether or not the account has been deleted
+        location_flag = []
+        for i in range(100): #assign all locations to 'available' by default
+            location_flag.append(True) #print all location availability (debug only)
+        print_location_data()
+        deleted_account = account_list[len(account_list)-1]
+        delete_account(len(account_list))
+        assert deleted_account not in account_list
+        assert False not in location_flag
 
     # //----------------------------------------------
     # // Basic Item Creation Function Tests
